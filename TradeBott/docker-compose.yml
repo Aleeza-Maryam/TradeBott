@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  database:
+    image: mongo:latest
+    container_name: tradebot_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  app:
+    build: .
+    container_name: tradebot_app
+    depends_on:
+      - database
+    environment:
+      - CONNECTION_STRING=mongodb://database:27017
+    stdin_open: true # Console input support ke liye
+    tty: true        # Interactive menu display ke liye
+
+volumes:
+  mongo_data:
