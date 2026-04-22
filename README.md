@@ -24,7 +24,7 @@ and clean architecture principles.
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 | Technology | Purpose |
 |-----------|---------|
@@ -110,83 +110,85 @@ public interface IReportable
 ---
 
 ##  Project Structure
+
+
+```
 TradeBot/
-│
-├── Models/                  # Domain models / blueprints
-│   ├── Asset.cs             # Abstract base class (Abstraction)
-│   ├── CryptoAsset.cs       # Crypto assets — BTC, ETH (Inheritance)
-│   ├── StockAsset.cs        # Stock assets — AAPL, MSFT (Inheritance)
-│   ├── Wallet.cs            # Balance management (Encapsulation)
-│   └── Domain.cs            # User, Portfolio, Transaction, Goals
-│
-├── Interfaces/              # Contracts / rules
-│   └── IInterfaces.cs       # ITradable, IReportable, IRepository
-│
-├── Data/                    # Database layer
-│   └── MongoDbContext.cs    # MongoDB connection and collections
-│
-├── Repositories/            # Data access layer (Repository Pattern)
-│   └── Repositories.cs      # UserRepo, PortfolioRepo, TransactionRepo
-│
-├── Services/                # Business logic
-│   ├── AuthService.cs       # Login / Signup
-│   ├── TradingEngine.cs     # Buy / Sell execution
-│   ├── MarketSimulator.cs   # Background price simulation
-│   ├── ReportingService.cs  # CSV / JSON export
-│   ├── AnalyticsService.cs  # Profit / Loss calculations
-│   ├── AlertService.cs      # Stop Loss / Take Profit
+├── Models/                # Domain models / blueprints
+│   ├── Asset.cs           # Abstract base class (Abstraction)
+│   ├── CryptoAsset.cs     # Crypto assets — BTC, ETH (Inheritance)
+│   ├── StockAsset.cs      # Stock assets — AAPL, MSFT (Inheritance)
+│   ├── Wallet.cs          # Balance management (Encapsulation)
+│   └── Domain.cs          # User, Portfolio, Transaction, Goals
+├── Interfaces/            # Contracts / rules
+│   └── IInterfaces.cs     # ITradable, IReportable, IRepository
+├── Data/                  # Database layer
+│   └── MongoDbContext.cs  # MongoDB connection and collections
+├── Repositories/          # Data access layer (Repository Pattern)
+│   └── Repositories.cs    # UserRepo, PortfolioRepo, TransactionRepo
+├── Services/              # Business logic
+│   ├── AuthService.cs     # Login / Signup
+│   ├── TradingEngine.cs   # Buy / Sell execution
+│   ├── MarketSimulator.cs # Background price simulation
+│   ├── ReportingService.cs# CSV / JSON export
+│   ├── AnalyticsService.cs# Profit / Loss calculations
+│   ├── AlertService.cs    # Stop Loss / Take Profit
 │   ├── PriceHistoryService.cs # Price history tracking
-│   └── GoalService.cs       # Trading goals management
-│
-├── Utils/                   # Helper utilities
-│   └── ConsoleUI.cs         # All display and input methods
-│
-├── Program.cs               # Application entry point
-├── Dockerfile               # Docker configuration
-├── docker-compose.yml       # Docker orchestration
-└── README.md                # Project documentation
-
+│   └── GoalService.cs     # Trading goals management
+├── Utils/                 # Helper utilities
+│   └── ConsoleUI.cs       # All display and input methods
+├── Program.cs             # Application entry point
+├── Dockerfile             # Docker configuration
+├── docker-compose.yml     # Docker orchestration
+└── README.md              # Project documentation
 ---
 
-## 🗄️ Database Design
+##  Database Design
 
-MongoDB is used with the following collections:
-TradeBotDB
-├── Users
-│   ├── _id (ObjectId)
-│   ├── Username (unique)
-│   ├── PasswordHash (BCrypt)
-│   ├── Email
-│   └── CreatedAt
-│
-├── Portfolios
-│   ├── _id (ObjectId)
-│   ├── UserId
-│   ├── Wallet { Balance, Currency }
-│   ├── CryptoAssets []
-│   ├── StockAssets []
-│   └── Transactions []
-│
-├── Transactions
-│   ├── _id (ObjectId)
-│   ├── PortfolioId
-│   ├── Type (Buy/Sell)
-│   ├── AssetSymbol
-│   ├── Quantity
-│   ├── PricePerUnit
-│   └── Timestamp
-│
-└── TradingGoals
-├── _id (ObjectId)
-├── PortfolioId
-├── GoalName
-├── TargetAmount
-├── StartingAmount
-├── TargetDate
-└── IsCompleted
+TradeBot uses **MongoDB**, a NoSQL database. Below are the key collections and their schemas:
 
----
+### 1. Users 
+Stores authentication and profile details.
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `_id` | ObjectId | Primary Key |
+| `Username` | String | Unique username |
+| `PasswordHash`| String | BCrypt hashed password |
+| `Email` | String | User's email address |
+| `CreatedAt` | DateTime | Account creation timestamp |
 
+### 2. Portfolios 
+Manages user balances and linked assets.
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `_id` | ObjectId | Primary Key |
+| `UserId` | ObjectId | Reference to User |
+| `Wallet` | Object | `{ Balance, Currency }` |
+| `CryptoAssets`| Array | List of owned cryptocurrencies |
+| `StockAssets` | Array | List of owned stocks |
+| `Transactions`| Array | History of trade IDs |
+
+### 3. Transactions 
+Records every buy and sell execution.
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `_id` | ObjectId | Primary Key |
+| `PortfolioId` | ObjectId | Linked portfolio |
+| `Type` | String | Buy or Sell |
+| `AssetSymbol` | String | e.g., BTC, AAPL |
+| `Quantity` | Double | Number of units |
+| `PricePerUnit`| Double | Execution price |
+| `Timestamp` | DateTime | Trade time |
+
+### 4. TradingGoals 
+Tracks user-defined financial targets.
+| Field | Type | Description |
+| :--- | :--- | :--- |
+| `_id` | ObjectId | Primary Key |
+| `GoalName` | String | e.g., "Retirement Fund" |
+| `TargetAmount`| Double | Target balance |
+| `IsCompleted` | Boolean | Goal status |
+```
 ##  Prerequisites
 
 Before running the project, make sure you have:
@@ -197,7 +199,7 @@ Before running the project, make sure you have:
 
 ---
 
-## 🔧 Installation & Setup
+##  Installation & Setup
 
 ### Step 1 — Clone the repository
 ```bash
@@ -288,7 +290,7 @@ Main Menu → [R]
 
 ---
 
-## 📋 Main Menu Options
+##  Main Menu Options
 
 | Option | Feature |
 |--------|---------|
@@ -311,7 +313,7 @@ Main Menu → [R]
 
 ---
 
-## 🔒 Security
+##  Security
 
 - Passwords are **never stored in plain text**
 - BCrypt hashing with work factor 11
@@ -320,7 +322,7 @@ Main Menu → [R]
 
 ---
 
-## 📦 NuGet Packages
+##  NuGet Packages
 
 ```xml
 <PackageReference Include="MongoDB.Driver" Version="2.x.x" />
@@ -330,7 +332,7 @@ Main Menu → [R]
 
 ---
 
-## 🤝 Contributing
+##  Contributing
 
 1. Fork the repository
 2. Create your feature branch
@@ -355,15 +357,15 @@ This project is licensed under the MIT License.
 
 ---
 
-## 👩‍💻 Author
+##  Author
 
 **Your Name**
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+- GitHub: [@Aleeza-Maryam](https://github.com/Aleeza-Maryam)
+- Email: aleezamarryam563@gmail.com
 
 ---
 
-## 📸 Screenshots
+##  Screenshots
 
 ### Main Menu
 ![Main Menu](screenshots/main_menu.png)
