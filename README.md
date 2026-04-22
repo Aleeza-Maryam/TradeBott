@@ -38,7 +38,7 @@ and clean architecture principles.
 
 ---
 
-## 🏗️ Architecture & OOP Concepts
+##  Architecture & OOP Concepts
 
 ### Abstraction
 ```csharp
