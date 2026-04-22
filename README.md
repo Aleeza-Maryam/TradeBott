@@ -416,4 +416,4 @@ This project is licensed under the MIT License.
 ### logout
 ![Logout](screenshots/logout.png)
 ### DOCKER CONTAINER RUNNING
-![Docker](screenshots/Docker_container_running.png)
+![Docker](screenshots/Docker_container_running.jpeg)
