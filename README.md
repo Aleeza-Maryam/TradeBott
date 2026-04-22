@@ -382,22 +382,36 @@ This project is licensed under the MIT License.
 ### Portfolio Analytics
 ![Analytics](screenshots/analytics.png)
 
-### Trading Goal Progress
-![Goal](screenshots/goal.png)
 
 ### Transaction History
 ![History](screenshots/history.png)
+
+### Buy_assets
 ![Buy Asset](screenshots/Buy_asset.png)
+
+### Sell Assets
 ![Sell_Assets](screenshots/sell_asset.png)
+
+### Stop loss or take profit
 ![Stop loss_ Take_profit](screenshots/SL_TP.png)
-![Stop loss_ Take_profit](screenshots/SL_TP.png)
+
+### Trading Goal 
 ![Goal](screenshots/goal.png)
+
+### Trading Goal Progress
 ![Goal progress](screenshots/goal_progress.png)
+
+### Trading Goal History
 ![Goal History](screenshots/goal_history.png)
+
+### Funds Deposit
 ![Funds](screenshots/deposit_funds.png)
+
+### Trading alerts
 ![Alerts](screenshots/alerts.png)
 
 ### Generated Report
 ![Report](screenshots/report.png)
 
+### logout
 ![Logout](screenshots/logout.png)
