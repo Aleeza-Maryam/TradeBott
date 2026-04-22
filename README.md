@@ -15,6 +15,8 @@ and clean architecture principles.
 - **Buy / Sell Trading** — Full trading engine with fee calculations
 - **Portfolio Analytics** — Profit/Loss tracking per asset
 - **Price Chart** — Text-based price history visualization
+- **Transaction History** — Text-based transaction history
+- **Deposit Funds** — Virtual money for taking trade
 - **Stop Loss / Take Profit** — Automated risk management alerts
 - **Trading Goals** — Set financial targets with progress tracking
 - **Reports** — Export trade history to CSV and JSON files
@@ -383,6 +385,17 @@ This project is licensed under the MIT License.
 
 ### Transaction History
 ![History](screenshots/history.png)
+![Buy Asset](screenshots/Buy_asset.png)
+![Sell_Assets](screenshots/sell_asset.png)
+![Stop loss_ Take_profit](screenshots/SL_TP.png)
+![Stop loss_ Take_profit](screenshots/SL_TP.png)
+![Goal](screenshots/goal.png)
+![Goal progress](screenshots/goal_progress.png)
+![Goal History](screenshots/goal_history.png)
+![Funds](screenshots/deposit_funds.png)
+![Alerts](screenshots/alerts.png)
 
 ### Generated Report
 ![Report](screenshots/report.png)
+
+![Logout](screenshots/logout.png)
