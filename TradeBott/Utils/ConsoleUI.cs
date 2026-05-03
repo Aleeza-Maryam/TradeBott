@@ -129,9 +129,11 @@ namespace TradeBot.Utils
             Console.WriteLine("  [H] Transaction History");
             Console.WriteLine("  [R] Generate Report");
             Console.WriteLine("  [D] Deposit Funds");
+            Console.WriteLine("  [RC] Risk Calculator");
             Console.WriteLine("  [TG] Set Trading Goal");
             Console.WriteLine("  [VG] View Goal Progress");
             Console.WriteLine("  [GH] Goal History");
+            Console.WriteLine("  [L]  Leaderboard & Competition");
             Console.WriteLine("  [X] Logout");
             Console.Write("\n  Enter your choice: ");
             string input = Console.ReadLine();
@@ -156,6 +158,36 @@ namespace TradeBot.Utils
             Console.Write("  " + message + ": ");
             string input = Console.ReadLine();
             return input != null ? input.Trim() : "";
+        }
+
+        // Displays the risk calculation summary produced by RiskManagementService
+        public static void PrintRiskSummary(RiskCalculationResult res)
+        {
+            PrintSection("RISK & REWARD CALCULATOR");
+
+            if (res == null)
+            {
+                PrintError("No result to display.");
+                return;
+            }
+
+            if (!res.IsValid)
+            {
+                PrintError(res.ErrorMessage ?? "Invalid parameters provided.");
+                return;
+            }
+
+            Console.WriteLine($"  Balance:           ${res.Balance:F2}");
+            Console.WriteLine($"  Entry Price:       ${res.EntryPrice:F8}");
+            Console.WriteLine($"  Stop Loss:         ${res.StopLoss:F8}");
+            Console.WriteLine($"  Risk %:            {res.RiskPercent:F2}%");
+            Console.WriteLine($"  Risk Amount:       ${res.RiskAmount:F8}");
+            Console.WriteLine($"  Recommended Qty:   {res.PositionSize:F8} (units)");
+            Console.WriteLine($"  TP (1:2 R:R):      ${res.TakeProfit_1to2:F8}");
+            Console.WriteLine($"  TP (1:3 R:R):      ${res.TakeProfit_1to3:F8}");
+
+            Console.WriteLine();
+            Pause();
         }
 
         public static string PromptPassword(string message)
@@ -223,7 +255,10 @@ namespace TradeBot.Utils
         public static void Pause(string msg = null)
         {
             Console.ForegroundColor = ConsoleColor.DarkGray;
-            Console.WriteLine(msg ?? "\n  Press Enter to continue...");
+            if (msg != null)
+                Console.WriteLine(msg);
+            else
+                Console.WriteLine("\n  Press Enter to continue...");
             Console.ResetColor();
             Console.ReadLine();
         }
@@ -552,140 +587,140 @@ namespace TradeBot.Utils
             }
         }
 
-        public static void PrintGoalProgress(TradingGoal goal, decimal currentValue)
+        // Leaderboard display method
+        public static void PrintLeaderboard(List<LeaderboardEntry> leaderboard)
         {
-            PrintSection("TRADING GOAL PROGRESS");
+            PrintSection("🏆 GLOBAL LEADERBOARD 🏆");
 
-            if (goal == null)
+            if (leaderboard == null || !leaderboard.Any())
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine("  No active goal.");
-                Console.WriteLine("  [TG] Set new goal.");
-                Console.ResetColor();
-                Pause();
+                PrintInfo("No users found in leaderboard yet!");
                 return;
             }
 
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine(string.Format("  Goal Name:      {0}", goal.GoalName));
+            Console.WriteLine();
+            // Simple aligned header to avoid complex box characters and width issues
+            Console.WriteLine($"{"RANK",-8} {"USERNAME",-22} {"PORTFOLIO VALUE",18} {"PROFIT/LOSS",14} {"CHANGE %",10}");
+            Console.WriteLine(new string('-', 80));
+
+            foreach (var entry in leaderboard)
+            {
+                string medal = entry.Rank == 1 ? "" : entry.Rank == 2 ? "" : entry.Rank == 3 ? "" : "";
+                string rankDisplay = medal != "" ? $"{entry.Rank} {medal}" : $"#{entry.Rank}";
+
+                ConsoleColor profitColor = entry.TotalProfitLoss >= 0 ? ConsoleColor.Green : ConsoleColor.Red;
+
+                // Format values consistently with header
+                Console.Write($"{rankDisplay,-8} ");
+                Console.Write($"{entry.Username,-22} ");
+                Console.Write($"{entry.PortfolioValue,18:C2} ");
+
+                Console.ForegroundColor = profitColor;
+                Console.Write($"{entry.TotalProfitLoss,14:C2} ");
+                Console.Write($"{entry.ProfitLossPercentage,9:F2}%");
+                Console.ResetColor();
+
+                Console.WriteLine();
+            }
+
+            Console.WriteLine("└──────┴────────────────────────┴──────────────────────┴────────────┴─────────────┘");
+
+            if (leaderboard.Any())
+            {
+                var winner = leaderboard.First();
+                PrintInfo($"\n Current Leader: {winner.Username} with ${winner.PortfolioValue:F2}! ");
+            }
+        }
+
+        // User rank display
+        public static void PrintUserRank(LeaderboardEntry userRank, LeaderboardSummary summary)
+        {
+            PrintSection("YOUR RANKING ");
+
+            if (userRank == null)
+            {
+                PrintInfo("You are not on the leaderboard yet!");
+                return;
+            }
+
+            Console.WriteLine($"\n  Your Username: {userRank.Username}");
+            Console.WriteLine($"  Your Rank: #{userRank.Rank} out of {summary.TotalUsers} users");
+            Console.WriteLine($"  Your Portfolio Value: ${userRank.PortfolioValue:F2}");
+
+            Console.ForegroundColor = userRank.TotalProfitLoss >= 0 ? ConsoleColor.Green : ConsoleColor.Red;
+            Console.WriteLine($"  Your Profit/Loss: ${userRank.TotalProfitLoss:F2} ({userRank.ProfitLossPercentage:F2}%)");
             Console.ResetColor();
 
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(string.Format("  Target Amount:  ${0:F2}", goal.TargetAmount));
-            Console.WriteLine(string.Format("  Starting Point: ${0:F2}", goal.StartingAmount));
-            Console.WriteLine(string.Format("  Current Value:  ${0:F2}", currentValue));
+            Console.WriteLine($"\n  Leaderboard Stats:");
+            Console.WriteLine($"  ───────────────────");
+            Console.WriteLine($"  Total Users: {summary.TotalUsers}");
+            Console.WriteLine($"  Average Value: ${summary.AveragePortfolioValue:F2}");
+            Console.WriteLine($"  Highest Value: ${summary.HighestValue:F2}");
+            Console.WriteLine($"  Lowest Value: ${summary.LowestValue:F2}");
+        }
 
-            Console.WriteLine();
+        // Competition menu
+        public static string ShowCompetitionMenu()
+        {
+            PrintSection("🏆 COMPETITION ZONE 🏆");
+            Console.WriteLine("  [1] View Global Leaderboard");
+            Console.WriteLine("  [2] View Top 10 Traders");
+            Console.WriteLine("  [3] My Rank & Stats");
+            Console.WriteLine("  [4] Best Performer");
+            Console.WriteLine("  [5] Back to Main Menu");
+            Console.Write("\n  Choice: ");
+            string input = Console.ReadLine();
+            return input != null ? input.Trim() : "";
+        }
 
-            decimal percent = goal.GetProgressPercent(currentValue);
-            int daysLeft = goal.GetDaysRemaining();
-            decimal dailyTarget = goal.GetDailyTarget(currentValue);
-            decimal remaining = goal.TargetAmount - currentValue;
+        // Goal progress visualization
+        public static void PrintGoalProgress(TradingGoal goal, decimal currentAmount)
+        {
+            PrintSection("TRADING GOAL — PROGRESS");
 
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.Write("  Progress:      [");
-
-            int totalBars = 30;
-            int filledBars = (int)(percent / 100 * totalBars);
-
-            Console.ForegroundColor = ConsoleColor.Green;
-            for (int i = 0; i < filledBars; i++)
-                Console.Write("█");
-
-            Console.ForegroundColor = ConsoleColor.DarkGray;
-            for (int i = filledBars; i < totalBars; i++)
-                Console.Write("░");
-
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(string.Format("] {0:F1}%", percent));
-
-            Console.WriteLine();
-
-            if (remaining > 0)
+            if (goal == null)
             {
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.WriteLine(string.Format("  Remaining:      ${0:F2}", remaining));
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("  Goal COMPLETED!");
+                PrintInfo("No active trading goal found.");
+                return;
             }
 
-            Console.ForegroundColor = ConsoleColor.White;
-            Console.WriteLine(string.Format("  Target Date:    {0:dd/MM/yyyy}", goal.TargetDate));
+            decimal progressPercent = goal.GetProgressPercent(currentAmount);
+            int daysRemaining = goal.GetDaysRemaining();
+            decimal dailyTarget = goal.GetDailyTarget(currentAmount);
 
-            if (daysLeft > 0)
-            {
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine(string.Format("  Time Remaining: {0} days", daysLeft));
+            Console.WriteLine($"  Goal: {goal.GoalName}");
+            Console.WriteLine($"  Target Amount: ${goal.TargetAmount:F2}");
+            Console.WriteLine($"  Starting Amount: ${goal.StartingAmount:F2}");
+            Console.WriteLine($"  Current Portfolio Value: ${currentAmount:F2}");
+            Console.WriteLine($"  Progress: {progressPercent:F1}%");
+            Console.WriteLine($"  Days Remaining: {daysRemaining}");
+            Console.WriteLine($"  Daily Required (approx): ${dailyTarget:F2}");
+            Console.WriteLine($"  Target Date: {goal.TargetDate:dd/MM/yyyy}");
+            Console.WriteLine($"  Status: {(goal.IsCompleted ? "Completed" : goal.IsActive ? "Active" : "Inactive")}");
 
-                if (dailyTarget > 0)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(string.Format("  Daily Target:   ${0:F2} per day", dailyTarget));
-                }
-            }
-            else
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("  Target date has expired!");
-            }
-
-            Console.WriteLine();
-
-            Console.ForegroundColor = ConsoleColor.Green;
-            if (percent >= 75)
-                Console.WriteLine("  *** Excellent! You are almost there! ***");
-            else if (percent >= 50)
-                Console.WriteLine("  *** Halfway point reached! Keep going! ***");
-            else if (percent >= 25)
-                Console.WriteLine("  *** On the right track! ***");
-            else
-                Console.WriteLine("  *** Stay focused! The journey has begun! ***");
-
-            Console.ResetColor();
             Console.WriteLine();
             Pause();
         }
 
+        // Display history of goals for a portfolio
         public static void PrintGoalHistory(List<TradingGoal> goals)
         {
             PrintSection("GOAL HISTORY");
 
             if (goals == null || goals.Count == 0)
             {
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.WriteLine("  No goal history found.");
-                Console.ResetColor();
-                Pause();
+                PrintInfo("No goals found for this portfolio.");
                 return;
             }
 
-            foreach (TradingGoal goal in goals)
+            foreach (var g in goals)
             {
-                if (goal.IsCompleted)
-                    Console.ForegroundColor = ConsoleColor.Green;
-                else if (!goal.IsActive)
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                else
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-
-                string status = goal.IsCompleted
-                    ? "COMPLETE"
-                    : goal.IsActive
-                        ? "ACTIVE"
-                        : "CANCELLED";
-
-                Console.WriteLine(string.Format(
-                    "  [{0}] {1} | Target: ${2:F2} | Date: {3:dd/MM/yyyy}",
-                    status,
-                    goal.GoalName,
-                    goal.TargetAmount,
-                    goal.TargetDate));
+                string status = g.IsCompleted ? "Completed" : g.IsActive ? "Active" : "Inactive";
+                Console.ForegroundColor = g.IsCompleted ? ConsoleColor.Green : ConsoleColor.White;
+                Console.WriteLine($"  {g.GoalName} — Target: ${g.TargetAmount:F2} | Set: {g.CreatedAt:dd/MM/yyyy} | Due: {g.TargetDate:dd/MM/yyyy} | Status: {status}");
+                Console.ResetColor();
             }
 
-            Console.ResetColor();
             Console.WriteLine();
             Pause();
         }

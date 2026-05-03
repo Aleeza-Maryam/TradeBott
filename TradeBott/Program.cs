@@ -40,7 +40,7 @@ namespace TradeBot
             PriceHistoryService priceHistory =
                 new PriceHistoryService();
             GoalService goalService = new GoalService(context);
-
+            LeaderboardService leaderboardService = new LeaderboardService(context, portfolioRepo, analyticsService);
             // ── Banner ────────────────────────────────────────────
             ConsoleUI.PrintBanner();
             ConsoleUI.PrintInfo("Connecting to MongoDB...");
@@ -213,13 +213,38 @@ namespace TradeBot
 
                 // Fetch fresh portfolio data from DB to ensure accuracy
                 Portfolio freshPortfolio = await portfolioRepo
-                    .GetByUserIdAsync(currentUser.Id) ?? portfolio;
+                    .GetByUserIdAsync(currentUser.Id);
+                if (freshPortfolio == null)
+                    freshPortfolio = portfolio;
 
                 switch (choice)
                 {
                     case "P":
                         ConsoleUI.PrintPortfolio(freshPortfolio);
                         ConsoleUI.Pause();
+                        break;
+                    case "RC":
+                        // Risk Calculator
+                        ConsoleUI.PrintSection("RISK CALCULATOR");
+                        decimal balance = freshPortfolio.Wallet.Balance;
+                        Console.WriteLine($"  Available Balance: ${balance:F2}");
+
+                        decimal entry = ConsoleUI.PromptDecimal("Entry price (USD)");
+                        decimal sl = ConsoleUI.PromptDecimal("Stop Loss price (USD)");
+
+                        Console.Write("  Side (Long/Short) [Long]: ");
+                        string sideInput = Console.ReadLine();
+                        string side = string.IsNullOrWhiteSpace(sideInput) ? "Long" : sideInput.Trim();
+
+                        Console.Write("  Risk % (default 2): ");
+                        string riskInput = Console.ReadLine();
+                        decimal riskPercent = 2m;
+                        if (!string.IsNullOrWhiteSpace(riskInput) && decimal.TryParse(riskInput, out var parsedRisk))
+                            riskPercent = parsedRisk;
+
+                        var riskSvc = new RiskManagementService();
+                        var res = riskSvc.CalculateTradeRisk(balance, entry, sl, riskPercent, side);
+                        ConsoleUI.PrintRiskSummary(res);
                         break;
 
                     case "M":
@@ -413,6 +438,63 @@ namespace TradeBot
                             "${0:F2} deposited. New balance: ${1:F2}",
                             depositAmt,
                             freshPortfolio.Wallet.Balance));
+                        break;
+                    case "L":
+                        bool inLeaderboardMenu = true;
+                        while (inLeaderboardMenu)
+                        {
+                            string lbChoice = ConsoleUI.ShowCompetitionMenu();
+
+                            switch (lbChoice)
+                            {
+                                case "1":
+                                    // 🔥 await lagao
+                                    var fullLeaderboard = await leaderboardService.GetGlobalLeaderboardAsync();
+                                    ConsoleUI.PrintLeaderboard(fullLeaderboard);
+                                    ConsoleUI.Pause();
+                                    break;
+
+                                case "2":
+                                    var topUsers = await leaderboardService.GetTopUsersAsync(10);
+                                    ConsoleUI.PrintLeaderboard(topUsers);
+                                    ConsoleUI.Pause();
+                                    break;
+
+                                case "3":
+                                    var summary = await leaderboardService.GetLeaderboardSummaryAsync(currentUser.Id, currentUser.Username);
+                                    var userRank = await leaderboardService.GetUserRankAsync(currentUser.Id, currentUser.Username);
+                                    ConsoleUI.PrintUserRank(userRank, summary);
+                                    ConsoleUI.Pause();
+                                    break;
+
+                                case "4":
+                                    var bestPerformer = await leaderboardService.GetBestPerformerAsync();
+                                    if (bestPerformer != null && bestPerformer.TotalProfitLoss != 0)
+                                    {
+                                        ConsoleUI.PrintSection(" BEST PERFORMER ");
+                                        Console.WriteLine($"\n  Username: {bestPerformer.Username}");
+                                        Console.WriteLine($"  Rank: #{bestPerformer.Rank}");
+                                        Console.WriteLine($"  Portfolio Value: ${bestPerformer.PortfolioValue:F2}");
+                                        Console.WriteLine($"   Profit/Loss: ${bestPerformer.TotalProfitLoss:F2}");
+                                        Console.WriteLine($"   Profit Percentage: {bestPerformer.ProfitLossPercentage:F2}%");
+                                    }
+                                    else
+                                    {
+                                        ConsoleUI.PrintInfo("No active traders yet! Make some trades to appear on leaderboard.");
+                                        ConsoleUI.PrintInfo("Tip: Buy assets first using [B] option!");
+                                    }
+                                    ConsoleUI.Pause();
+                                    break;
+
+                                case "5":
+                                    inLeaderboardMenu = false;
+                                    break;
+
+                                default:
+                                    ConsoleUI.PrintError("Invalid choice!");
+                                    break;
+                            }
+                        }
                         break;
                     case "TG":
                         ConsoleUI.PrintSection("Set your trading goal");

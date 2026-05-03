@@ -6,7 +6,7 @@ using TradeBot.Models;
 
 namespace TradeBot.Services
 {
-    // Simulates market price fluctuations using random walk theory
+   
     // Runs on a background thread to mimic a live price feed
     public class MarketSimulator
     {
@@ -70,7 +70,7 @@ namespace TradeBot.Services
             _backgroundThread.Start();
         }
 
-        // Asynchronously checks if any alerts need execution
+       
         private async Task<List<string>> CheckAlertsAsync()
         {
             if (_alertService == null)
@@ -87,8 +87,7 @@ namespace TradeBot.Services
 
         public bool IsRunning => _isRunning;
 
-        // Updates the price of every asset in the portfolio for a single "tick"
-        // POLYMORPHISM: Iterates through List<Asset> regardless of specific type
+
         public void SimulateOneTick(Portfolio portfolio)
         {
             foreach (Asset asset in portfolio.GetAllAssets())

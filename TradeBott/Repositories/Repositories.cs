@@ -8,11 +8,7 @@ using TradeBot.Models;
 
 namespace TradeBot.Repositories
 {
-    // REPOSITORY PATTERN: This layer handles all MongoDB data access.
-    // Services do not interact with the Database directly; they use these repositories.
-
-    // ── BASE REPOSITORY ───────────────────────────────────
-    // A generic base class to handle standard CRUD operations for any entity.
+    
     public abstract class BaseRepository<T> : IRepository<T> where T : class
     {
         protected readonly IMongoCollection<T> _collection;

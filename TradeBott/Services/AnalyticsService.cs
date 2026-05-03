@@ -67,6 +67,7 @@ namespace TradeBot.Services
         {
             var assetAnalyticsList = new List<AssetAnalytics>();
 
+
             // POLYMORPHISM: Iterate through the List<Asset> using the base class
             foreach (Asset asset in portfolio.GetAllAssets())
             {

@@ -9,8 +9,7 @@ using TradeBot.Models;
 
 namespace TradeBot.Services
 {
-    // Generates CSV and JSON reports for portfolio data
-    // Utilizes System.IO for file system operations
+
     public class ReportingService
     {
         private readonly string _reportsDirectory;
